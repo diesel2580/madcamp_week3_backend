@@ -4,6 +4,10 @@ exports.signup = async (req, res) => {
     const { username, email, password } = req.body;
     console.log("Signup request received with:", { username, email, password }); //test
     try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
         const newUser = new User({ username, email, password });
         await newUser.save();
         console.log("User registered successfully:", newUser); //
@@ -16,16 +20,21 @@ exports.signup = async (req, res) => {
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    console.log("Login request received with:", { email, password }); // 수정: 요청 데이터 로그 추가
     try {
         const user = await User.findOne({ email, password });
         if (!user) {
+            console.log("Invalid credentials for email:", email); // 수정: 잘못된 자격 증명 로그 추가
             return res.status(400).json({ error: 'Invalid credentials' });
         }
+        console.log("Login successful for user:", user._id); // 수정: 로그인 성공 로그 추가
         res.status(200).json({ message: 'Login successful', userId: user._id });
     } catch (error) {
+        console.error('Error during login:', error); // 수정: 오류 로그 추가
         res.status(500).json({ error: 'Failed to login' });
     }
 };
+
 
 exports.addFriend = async (req, res) => {
 
